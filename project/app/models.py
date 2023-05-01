@@ -98,13 +98,14 @@ class Bursar(models.Model):
     contact=models.BigIntegerField()
     email= models.EmailField(unique=True)
     passport=models.ImageField(upload_to="media/staff_passport/", null=True)
+    address = models.CharField(max_length=200, null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
     
     # FROM WHAT DEPARTMENT
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    
-    
+
     def __str__(self):
-        return self.name
+        return self.first_name
     
 class SchoolOfficer(models.Model):
     SCHOOL = (

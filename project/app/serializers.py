@@ -17,7 +17,6 @@ class StudentSerializer(serializers.ModelSerializer):
             if attrs["contact"] == attrs["nok_contact"]:
                 return serializers.ValidationError({"error": "Student and Next Of Kin's Contacts must NOT be the same"})
             return attrs
-            
         
         def create(self, validated_data):
             department = validated_data.pop("department")
@@ -40,8 +39,8 @@ class StudentSerializer(serializers.ModelSerializer):
         
 class BursarSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Bursar,
-        fields = ("first_name", "last_name", "staff_number", "contact", "email", "passport", "department")
+        model = Bursar
+        fields = ("first_name", "last_name", "staff_number", "contact", "email", "passport", "department", "address", "date_of_birth")
         
         def create(self, validated_data):
             staff = Bursar.objects.create(
@@ -51,7 +50,9 @@ class BursarSerializer(serializers.ModelSerializer):
                 contact=validated_data["contact"],
                 email=validated_data["email"],
                 passport=validated_data["passport"],
-                department=validated_data["deparment"]
+                department=validated_data["deparment"],
+                address=validated_data["address"],
+                date_of_birth=validated_data["date_of_birth"]
             )
             staff.save()
             return staff

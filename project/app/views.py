@@ -64,7 +64,7 @@ def StudentBiodata(request, id):
 
 class SignUpBursar(APIView):
     def post(self, request, format=None):
-        serializer = StudentSerializer(data=request.data)
+        serializer = BursarSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -82,7 +82,7 @@ def AllBursars(request, format=None):
             "contact": bursars.contact,
             "email": bursars.email,
             "department": bursars.department.department,
-            "passport": bursars.passport
+            "passport": str(bursars.passport),
         }
         bursar_list.append(resp)
     context_data = {"bursars":bursar_list}
