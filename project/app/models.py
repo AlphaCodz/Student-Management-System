@@ -90,7 +90,6 @@ class Student(AbstractUser):
             self.set_password(raw_password=self.last_name) 
         super(Student, self).save(*args, **kwargs)
 
-
 class Bursar(models.Model):
     student = models.ManyToManyField(Student)
     first_name=models.CharField(max_length=250)
@@ -98,6 +97,7 @@ class Bursar(models.Model):
     staff_number = models.CharField(max_length=30)
     contact=models.BigIntegerField()
     email= models.EmailField(unique=True)
+    passport=models.ImageField(upload_to="media/staff_passport/", null=True)
     
     # FROM WHAT DEPARTMENT
     department = models.ForeignKey(Department, on_delete=models.CASCADE)

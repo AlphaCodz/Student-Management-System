@@ -41,16 +41,17 @@ class StudentSerializer(serializers.ModelSerializer):
 class BursarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bursar,
-        fields = "__all__"
+        fields = ("first_name", "last_name", "staff_number", "contact", "email", "passport", "department")
         
         def create(self, validated_data):
             staff = Bursar.objects.create(
-                student=validated_data["student"],
                 first_name=validated_data["first_name"],
                 last_name = validated_data["last_name"],
                 staff_number=validated_data["staff_number"],
                 contact=validated_data["contact"],
-                email=validated_data["email"]
+                email=validated_data["email"],
+                passport=validated_data["passport"],
+                department=validated_data["deparment"]
             )
             staff.save()
             return staff

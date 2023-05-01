@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import Student
-from .serializers import StudentSerializer
+from .models import Student, Bursar
+from .serializers import StudentSerializer, BursarSerializer
 from rest_framework.decorators import APIView, api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -63,8 +63,30 @@ def StudentBiodata(request, id):
     return JsonResponse(data)
 
 class SignUpBursar(APIView):
-    pass
+    def post(self, request, format=None):
+        serializer = StudentSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(["GET"])
+def AllBursars(request, format=None):
+    bursar = Bursar.objects.all()
+    bursar_list = []
+    for bursars in bursar:
+        resp = {
+            "first_name": bursars.first_name,
+            "last_name": bursars.last_name,
+            "staff_number": bursars.staff_number,
+            "contact": bursars.contact,
+            "email": bursars.email,
+            "department": bursars.department.department,
+            "passport": bursars.passport
+        }
+        bursar_list.append(resp)
+    context_data = {"bursars":bursar_list}
+    return JsonResponse(context_data)
 
 class LoginStudent(APIView):
     def post(self, request, format=None):

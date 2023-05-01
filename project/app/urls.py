@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegStudent
+from .views import RegStudent, SignUpBursar
 from . import views
 
 urlpatterns = [
@@ -7,5 +7,9 @@ urlpatterns = [
     path("all/student", views.GetAllStudents, name="get-students"),
     
     # Biodata
-    path("biodata/<int:id>", views.StudentBiodata, name="biodata")
+    path("biodata/<int:id>", views.StudentBiodata, name="biodata"),
+    
+    # Bursars
+    path("register/bursar", SignUpBursar.as_view(), name="reg-bursar"),
+    path("all/bursar", views.AllBursars, name="get-bursars")
 ]
