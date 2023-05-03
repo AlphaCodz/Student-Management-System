@@ -5,6 +5,8 @@ from rest_framework.decorators import APIView, api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import JsonResponse
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
 
 
 # Create your views here.
@@ -88,18 +90,19 @@ def AllBursars(request, format=None):
     context_data = {"bursars":bursar_list}
     return JsonResponse(context_data)
 
-class LoginStudent(APIView):
-    def post(self, request, format=None):
-        data = request.data
-        student = Student.objects.filter(matric_number=data["matric_number"])
-        if not student:
-            res = {
-                "code":401,
-                "error": "Invalid Matric Number"
-            }
-            return Response(res, status=status.HTTP_401_UNAUTHORIZED)
-        # INCOMPLETE DUE TO INABILITY TO ACCESS "student.check_password()" function
+class StudentLogin(APIView):
+    def post(self, request):
+        matric_number = request.data.get('email')
+        password = request.data.get('password')
         
-
+        student = authenticate(matric_number=matric_number, password=password)
         
+        if student:
+            request.user = student
+            
+            # GET ACCESS TOKEN FOR USER
+            token = Token.objects.get(user=student)
+            return Response({"token": token.key},status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid Credential'}, status=status.HTTP_401_UNAUTHORIZED)
 

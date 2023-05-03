@@ -11,15 +11,18 @@ class StudentSerializer(serializers.ModelSerializer):
         def validate(self, attrs):
             email_exists = Student.objects.filter(email=request.data.get("email")).exists()
             if len(attrs["first_name"]) or len(attrs["last_name"]) < 1:
-                return serializers.ValidationError({"error":"Student's name cannot be less than 1 Character"})
+                raise serializers.ValidationError({"error":"Student's name cannot be less than 1 Character"})
             if email_exists:
-                return serializers.ValidationError({"error": "Sorry this email is taken"})
+                raise serializers.ValidationError({"error": "Sorry this email is taken"})
             if attrs["contact"] == attrs["nok_contact"]:
-                return serializers.ValidationError({"error": "Student and Next Of Kin's Contacts must NOT be the same"})
+                raise serializers.ValidationError({"error": "Student and Next Of Kin's Contacts must NOT be the same"})
             return attrs
         
         def create(self, validated_data):
             department = validated_data.pop("department")
+            last_name = validated_data.get("last_name", "")
+            # password = last_name
+            
             student = Student.objects.create(
                 first_name = validated_data["first_name"],
                 middle_name=validated_data["middle_name"],
@@ -28,12 +31,16 @@ class StudentSerializer(serializers.ModelSerializer):
                 contact=validated_data["contact"],
                 date_of_birth=validated_data["date_of_birth"],
                 passport=validated_data["passport"],
+                department=validated_data["department"],
+                email=validated_data["email"],
                 nok_name=validated_data["nok_name"],
                 relationship=validated_data["relationship"],
                 nok_contact=validated_data["nok_contact"],
                 **validated_data
             )
-            student.set_password(raw_password=validated_data["password"])
+            # if not password:
+            #     password = last_name
+            # student.set_password(raw_password=password)
             student.save()
             return student
         
