@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 import string, random as rand
+from rest_framework.response import Response
+
 # Create your models here.
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -84,10 +86,10 @@ class Student(AbstractUser):
             self.matric_number = 'P/ND/22/3210'+''.join(rand.choices(string.digits, k=3))
         if not self.password:
             self.password = self.last_name
-            self.set_password(raw_password=self.last_name)
+            self.set_password(self.last_name)
         else:
             self.password = self.last_name
-            self.set_password(raw_password=self.last_name) 
+            self.set_password(self.last_name)
         super(Student, self).save(*args, **kwargs)
 
 class Bursar(models.Model):
