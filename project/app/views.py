@@ -36,7 +36,7 @@ def GetAllStudents(request, format=None):
             "nok_name": students.nok_name,
             "relationship": students.relationship,
             "nok_contact": students.nok_contact,
-            "department": students.department.department,
+            "department": str(students.department),
             "matric_number": students.matric_number
         }
         data.append(res)
@@ -57,7 +57,7 @@ def StudentBiodata(request, id):
         "contact": student.contact,
         "matric_no": student.matric_number,
         "student_address": student.address,
-        "department": student.department.department,
+        "department": str(student.department),
         "next_of_kin": student.nok_name,
         "relationship_with_next_of_kin": student.relationship,
         "next_of_kin_contact": student.nok_contact,
@@ -85,7 +85,7 @@ def AllBursars(request, format=None):
             "staff_number": bursars.staff_number,
             "contact": bursars.contact,
             "email": bursars.email,
-            "department": bursars.department.department,
+            "department": str(bursars.department),
             "passport": str(bursars.passport),
         }
         bursar_list.append(resp)
@@ -104,7 +104,7 @@ class StudentLogin(APIView):
         if student.check_password(raw_password=request.data["password"]):
             token = RefreshToken.for_user(student)
             resp = {
-                "code": 202,
+                "code": 200,
                 "message": "Login Successful",
                 "student_data": jsonify_student(student),
                 "token": str(token.access_token)

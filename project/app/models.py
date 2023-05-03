@@ -41,6 +41,10 @@ class Department(models.Model):
     )
     
     department=models.CharField(max_length=70, choices=DEPARTMENT)
+    
+    def __str__(self):
+        return self.department
+    
 
 class Student(AbstractUser):
     NEXT_OF_KIN = (
