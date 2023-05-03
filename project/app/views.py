@@ -91,39 +91,6 @@ def AllBursars(request, format=None):
         bursar_list.append(resp)
     context_data = {"bursars":bursar_list}
     return JsonResponse(context_data)
-
-class StudentLogins(APIView):
-    def post(self, request):
-        matric_number = request.data.get('email')
-        password = request.data.get('password')
-        
-        student = authenticate(matric_number=matric_number, password=password)
-        
-        if student:
-            request.user = student
-            
-            # GET ACCESS TOKEN FOR USER
-            token = Token.objects.get(user=student)
-            return Response({"token": token.key},status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Invalid Credential'}, status=status.HTTP_401_UNAUTHORIZED)
-
-class StudentLoginss(APIView):
-    def post(self, request):
-        data = request.data
-        matric = data["matric_number"]
-        password = data.get("password")
-
-        # Authenticate the student
-        student = authenticate(request=request, matric_number=matric, password=password)
-        
-        if student is not None:
-            # Authentication successful
-            token, created = Token.objects.get_or_create(user=student)
-            return Response({"token": token.key}, status=status.HTTP_200_OK)
-        else:
-            # Authentication failed
-            return Response({'error': 'Invalid Credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         
 class StudentLogin(APIView):
     def post(self, request, format=None):
