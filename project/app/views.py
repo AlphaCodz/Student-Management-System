@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Student, Bursar
+from .models import Student, Bursar, Department
 from .serializers import StudentSerializer, BursarSerializer
 from rest_framework.decorators import APIView, api_view
 from rest_framework.response import Response
@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from helpers.views import jsonify_student
+from app.permissions import IsBursar, IsStudent
 
 # Create your views here.
 class RegStudent(APIView):
@@ -115,3 +116,23 @@ class StudentLogin(APIView):
             "message": "Incorrect Password"
         }
         return Response(resp, status=status.HTTP_401_UNAUTHORIZED)
+    
+class GetAllSIBD(APIView): # SIBD = STUDENTS IN BURSAR'S DEPARTMENT
+    permission_classes=[IsStudent,]
+    def get(self, request):
+        dept = request.user.department.id
+        try:
+            bursar_dept = Bursar.objects.get(department=dept)
+            students = Student.objects.filter(department=bursar_dept.id)
+            student_data = [jsonify_student(student) for student in students]
+            data = {
+                "student_data": student_data
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        except Department.DoesNotExist:
+            return Response({"error": "Department not found."},
+                            status=status.HTTP_404_NOT_FOUND)
+        except Student.DoesNotExist:
+            return Response({"error": "No students found in the department."},
+                            status=status.HTTP_404_NOT_FOUND)
+        

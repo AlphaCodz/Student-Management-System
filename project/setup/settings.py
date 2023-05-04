@@ -103,6 +103,8 @@ DATABASES = {
     }
 }
 
+SITE_ID = 1
+
 SIMPLE_JWT = {
     'UPDATE_LAST_LOGIN': True,
     'ACCESS_TOKEN_LIFETIME': timedelta(days=100000),

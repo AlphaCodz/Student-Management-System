@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegStudent, SignUpBursar, StudentLogin
+from .views import RegStudent, SignUpBursar, StudentLogin, GetAllSIBD
 from . import views
 
 urlpatterns = [
@@ -12,5 +12,6 @@ urlpatterns = [
     
     # Bursars
     path("register/bursar", SignUpBursar.as_view(), name="reg-bursar"),
-    path("all/bursar", views.AllBursars, name="get-bursars")
+    path("all/bursar", views.AllBursars, name="get-bursars"),
+    path("my/students", GetAllSIBD.as_view(), name="all-students")
 ]
