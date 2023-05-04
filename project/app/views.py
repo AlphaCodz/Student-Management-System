@@ -10,6 +10,22 @@ from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from helpers.views import jsonify_student
 from app.permissions import IsBursar, IsStudent
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.core.paginator import Paginator
+from rest_framework import viewsets
+from django.views.decorators.vary import vary_on_cookie
+
+
+class UserViewSet(viewsets.ViewSet):
+    # With cookie: cache requested url for each user for 2 hours
+    @method_decorator(cache_page(60*60*2))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, format=None):
+        content = {
+            'user_feed': request.user.get_user_feed()
+        }
+        return Response(content)
 
 # Create your views here.
 class RegStudent(APIView):
@@ -20,52 +36,44 @@ class RegStudent(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(["GET"])
-def GetAllStudents(request, format=None):
-    student = Student.objects.all()
-    data = []
-    for students in student:
-        res = {
-            "first_name": students.first_name,
-            "middle_name":students.middle_name,
-            "last_name": students.last_name,
-            "address": students.address,
-            "contact": students.contact,
-            "email": students.email,
-            "date_of_birth": students.date_of_birth,
-            "passport": str(students.passport),
-            "nok_name": students.nok_name,
-            "relationship": students.relationship,
-            "nok_contact": students.nok_contact,
-            "department": str(students.department),
-            "matric_number": students.matric_number
+class GetAllStudents(APIView):
+    @method_decorator(cache_page(60*60*2))
+    def get(self, request, format=None):
+        student = Student.objects.all().order_by('id')
+
+        # PAGINATE LIST
+        paginator = Paginator(student, 10)
+
+        page_number = request.GET.get('page') #GET REQUESTED PAGE NUMBER FROM THE REQUEST PARAMETER
+        page_obj = paginator.get_page(page_number) #RETRIEVE THE PAGE OBJECT FOR THE REQUESTED PAGE
+
+        data = []
+        for students in page_obj:
+            res = {
+                "student_data": jsonify_student(students)
+            }
+            data.append(res)
+            
+            context_data = {
+                "yct_students":data,
+                "current_page": page_obj.number,
+                "total_pages": paginator.num_pages,
+                "has_previous": page_obj.has_previous(),
+                "has_next": page_obj.has_next()
+                }
+        return JsonResponse(context_data)
+
+class StudentBiodata(APIView):
+    @method_decorator(cache_page(60*60))
+    def get(self, request, id):
+        try:
+            student = Student.objects.get(id=id)
+        except Student.DoesNotExist:
+            return Response({"error": "Student does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        data = {
+            "biodata": jsonify_student(student)
         }
-        data.append(res)
-        context_data = {"yct_students":data}
-    return JsonResponse(context_data)
-
-@api_view(["GET"])
-def StudentBiodata(request, id):
-    try:
-        student = Student.objects.get(id=id)
-    except Student.DoesNotExist:
-        return Response({"error": "Student does not exist"}, status=status.HTTP_404_NOT_FOUND)
-
-    data = {
-        "first_name": student.first_name,
-        "middle_name": student.middle_name,
-        "last_name": student.last_name,
-        "contact": student.contact,
-        "matric_no": student.matric_number,
-        "student_address": student.address,
-        "department": str(student.department),
-        "next_of_kin": student.nok_name,
-        "relationship_with_next_of_kin": student.relationship,
-        "next_of_kin_contact": student.nok_contact,
-        "passport": str(student.passport),
-        "password": student.password
-    }
-    return JsonResponse(data)
+        return JsonResponse(data)
 
 class SignUpBursar(APIView):
     def post(self, request, format=None):
@@ -75,23 +83,24 @@ class SignUpBursar(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-@api_view(["GET"])
-def AllBursars(request, format=None):
-    bursar = Bursar.objects.all()
-    bursar_list = []
-    for bursars in bursar:
-        resp = {
-            "first_name": bursars.first_name,
-            "last_name": bursars.last_name,
-            "staff_number": bursars.staff_number,
-            "contact": bursars.contact,
-            "email": bursars.email,
-            "department": str(bursars.department),
-            "passport": str(bursars.passport),
-        }
-        bursar_list.append(resp)
-    context_data = {"bursars":bursar_list}
-    return JsonResponse(context_data)
+
+class AllBursars(APIView):
+    def get(request, format=None):
+        bursar = Bursar.objects.all()
+        bursar_list = []
+        for bursars in bursar:
+            resp = {
+                "first_name": bursars.first_name,
+                "last_name": bursars.last_name,
+                "staff_number": bursars.staff_number,
+                "contact": bursars.contact,
+                "email": bursars.email,
+                "department": str(bursars.department),
+                "passport": str(bursars.passport),
+            }
+            bursar_list.append(resp)
+        context_data = {"bursars":bursar_list}
+        return JsonResponse(context_data)
         
 class StudentLogin(APIView):
     def post(self, request, format=None):
@@ -119,6 +128,9 @@ class StudentLogin(APIView):
     
 class GetAllSIBD(APIView): # SIBD = STUDENTS IN BURSAR'S DEPARTMENT
     permission_classes=[IsStudent,]
+
+    # Cache page for the requested url for 1 hr
+    @method_decorator(cache_page(60*60))
     def get(self, request):
         dept = request.user.department.id
         try:
