@@ -53,10 +53,13 @@ INSTALLED_APPS = [
     # API
     "rest_framework",
     "rest_framework.authtoken",
-    "app"
+    "app",
+    "corsheaders" 
+
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -156,3 +159,26 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # ABSTRACT USER SETUP
 AUTH_USER_MODEL="app.Student"
+
+CORS_ORIGIN_ALLOW_ALL=True
+
+
+CORS_ALLOW_METHODS = (
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+)
+
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
+
+

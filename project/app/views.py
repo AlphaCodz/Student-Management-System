@@ -126,6 +126,17 @@ class StudentLogin(APIView):
         }
         return Response(resp, status=status.HTTP_401_UNAUTHORIZED)
     
+class BursarLogin(APIView):
+    def post(self, request, format=None):
+        data = request.data
+        bursar = Bursar.objects.filter(staff_number=data["staff_number"]).first()
+        if not bursar:
+            resp = {
+                "code":404,
+                "message": "Staff Number not Correct"
+            }
+            return Response(resp, status=status.HTTP_404_NOT_FOUND)
+    
 class GetAllSIBD(APIView): # SIBD = STUDENTS IN BURSAR'S DEPARTMENT
     permission_classes=[IsStudent,]
 

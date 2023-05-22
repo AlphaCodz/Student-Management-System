@@ -109,9 +109,20 @@ class Bursar(models.Model):
     
     # FROM WHAT DEPARTMENT
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    password = models.CharField(max_length=300, null=True)
 
     def __str__(self):
         return self.first_name
+    
+    def save(self, *args, **kwargs):
+        if not self.password:
+            self.password = self.last_name
+            self.set_password(self.last_name)
+        else:
+            self.password = self.last_name
+            self.set_password(self.last_name)
+        super(Bursar, self).save(*args, **kwargs)
+    
     
 class SchoolOfficer(models.Model):
     SCHOOL = (
