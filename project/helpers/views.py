@@ -3,6 +3,7 @@ from app.models import Student
 
 def jsonify_student(student:Student):
     return {
+        "id":student.id,
         "first_name": student.first_name,
         "middle_name": student.middle_name,
         "last_name": student.last_name,

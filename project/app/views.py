@@ -37,7 +37,7 @@ class RegStudent(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class GetAllStudents(APIView):
-    @method_decorator(cache_page(60*60*2))
+    @method_decorator(cache_page(60*2))
     def get(self, request, format=None):
         student = Student.objects.all().order_by('id')
 
