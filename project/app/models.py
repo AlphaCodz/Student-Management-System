@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 import string, random as rand
 from rest_framework.response import Response
+from django.contrib.auth.hashers import make_password
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -115,13 +116,21 @@ class Bursar(models.Model):
         return self.first_name
     
     def save(self, *args, **kwargs):
-        if not self.password:
-            self.password = self.last_name
-            self.set_password(self.last_name)
-        else:
-            self.password = self.last_name
-            self.set_password(self.last_name)
-        super(Bursar, self).save(*args, **kwargs)
+        def save(self, *args, **kwargs):
+            if not self.password:
+                self.password = self.last_name
+                self.password = make_password(self.password)
+            else:
+                self.password = self.last_name
+                self.password = make_password(self.password)
+            super().save(*args, **kwargs)
+        # if not self.password:
+        #     self.password = self.last_name
+        #     self.set_password(self.last_name)
+        # else:
+        #     self.password = self.last_name
+        #     self.set_password(self.last_name)
+        # super(Bursar, self).save(*args, **kwargs)
     
     
 class SchoolOfficer(models.Model):
@@ -139,7 +148,6 @@ class SchoolOfficer(models.Model):
     def __str__(self):
         return f"Staff: {self.staff_number}"
     
-
 class Semester(models.Model):
     SEMESTER = (
         ("FIRST SEMESTER", "FIRST SEMESTER"),

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Bursar
+from .models import Student, Bursar, Department
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,11 +45,18 @@ class StudentSerializer(serializers.ModelSerializer):
             return student
         
 class BursarSerializer(serializers.ModelSerializer):
+    department_id = serializers.PrimaryKeyRelatedField(
+        queryset = Department.objects.all(),
+        source='department',
+        write_only=True
+    )
     class Meta:
         model = Bursar
-        fields = ("first_name", "last_name", "staff_number", "contact", "email", "passport", "department", "address", "date_of_birth")
+        fields = ("first_name", "last_name", "staff_number", "contact", "email", "passport", "department_id", "address", "date_of_birth")
         
         def create(self, validated_data):
+            department_id = validated_data.pop('department_id')
+            department = Department.objects.get(id=department_id)
             staff = Bursar.objects.create(
                 first_name=validated_data["first_name"],
                 last_name = validated_data["last_name"],
@@ -57,9 +64,10 @@ class BursarSerializer(serializers.ModelSerializer):
                 contact=validated_data["contact"],
                 email=validated_data["email"],
                 passport=validated_data["passport"],
-                department=validated_data["deparment"],
                 address=validated_data["address"],
-                date_of_birth=validated_data["date_of_birth"]
+                date_of_birth=validated_data["date_of_birth"],
+                department=department,
+                **validated_data
             )
             staff.save()
             return staff
