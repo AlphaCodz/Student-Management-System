@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import Student, Bursar, Department
-from .serializers import StudentSerializer, BursarSerializer
+from .models import Student, Bursar, Department, Document
+from .serializers import StudentSerializer, BursarSerializer, DocumentSerializer
 from rest_framework.decorators import APIView, api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -75,6 +75,41 @@ class StudentBiodata(APIView):
         }
         return JsonResponse(data)
 
+class BursarDocumentsView(APIView):
+    def get(self, request, format=None):
+        bursar = request.user  # Assuming the current user is the bursar
+        documents = Document.objects.filter(staff=bursar)
+        serializer = DocumentSerializer(documents, many=True)
+        return Response(serializer.data)
+    
+class SubmitDocuments(APIView):
+    def post(self, request, staff_id):
+        student=request.user
+        try:
+            staff = Bursar.objects.get(id=staff_id)
+        except Bursar.DoesNotExist:
+            res = {
+                "code": 404,
+                "message": "Staff Does Not Exist"
+            }
+            return Response(res, status=status.HTTP_404_NOT_FOUND)
+        
+        bursar = Document.objects.create(
+            staff=staff,
+            name=request.data["name"],
+            file=request.data["file"]
+        )
+        bursar.save()
+        res = {
+            "code":201,
+            "message": "Documents Submitted Successfully",
+            "file_name": bursar.name,
+            "file": str(bursar.file.url),
+            "student": f"{student.first_name} {student.last_name}",
+            "department": student.department.department
+        }
+        return Response(res, status=status.HTTP_201_CREATED)
+        
 class SignUpBursar(APIView):
     def post(self, request, format=None):
         serializer = BursarSerializer(data=request.data)
@@ -82,7 +117,6 @@ class SignUpBursar(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class AllBursars(APIView):
     def get(request, format=None):
@@ -90,6 +124,7 @@ class AllBursars(APIView):
         bursar_list = []
         for bursars in bursar:
             resp = {
+                "id":bursars.id,
                 "first_name": bursars.first_name,
                 "last_name": bursars.last_name,
                 "staff_number": bursars.staff_number,

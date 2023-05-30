@@ -45,7 +45,6 @@ class Department(models.Model):
     
     def __str__(self):
         return self.department
-    
 
 class Student(AbstractUser):
     NEXT_OF_KIN = (
@@ -78,6 +77,9 @@ class Student(AbstractUser):
     password= models.CharField(max_length=300, null=True)
     
     
+    # documents = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)# SUBMIT DOCUMENTS
+    
+    
     USERNAME_FIELD="email"
     REQUIRED_FIELDS=[]
     
@@ -107,6 +109,8 @@ class Bursar(models.Model):
     passport=models.ImageField(upload_to="media/staff_passport/", null=True)
     address = models.CharField(max_length=200, null=True, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
+    signature = models.ImageField(upload_to="media/signature/", null=True)
+    is_bursar = models.BooleanField(default=True, null=True)
     
     # FROM WHAT DEPARTMENT
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
@@ -124,14 +128,14 @@ class Bursar(models.Model):
                 self.password = self.last_name
                 self.password = make_password(self.password)
             super().save(*args, **kwargs)
-        # if not self.password:
-        #     self.password = self.last_name
-        #     self.set_password(self.last_name)
-        # else:
-        #     self.password = self.last_name
-        #     self.set_password(self.last_name)
-        # super(Bursar, self).save(*args, **kwargs)
+
+class Document(models.Model):
+    staff = models.ForeignKey(Bursar, on_delete=models.CASCADE, null=True, related_name="busar")
+    name = models.CharField(max_length=100)
+    file = models.FileField(upload_to="media/documents/", null=True)
     
+    def __str__(self):
+        return self.name
     
 class SchoolOfficer(models.Model):
     SCHOOL = (

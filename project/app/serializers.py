@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, Bursar, Department
+from .models import Student, Bursar, Department, Document
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,3 +71,8 @@ class BursarSerializer(serializers.ModelSerializer):
             )
             staff.save()
             return staff
+        
+class DocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Document
+        fields = ('id', 'name', 'file')
