@@ -120,14 +120,18 @@ class Bursar(models.Model):
         return self.first_name
     
     def save(self, *args, **kwargs):
-        def save(self, *args, **kwargs):
-            if not self.password:
-                self.password = self.last_name
-                self.password = make_password(self.password)
-            else:
-                self.password = self.last_name
-                self.password = make_password(self.password)
-            super().save(*args, **kwargs)
+        if not self.password:
+            self.password = self.last_name
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
+        # def save(self, *args, **kwargs):
+        #     if not self.password:
+        #         self.password = self.last_name
+        #         self.password = make_password(self.password)
+        #     else:
+        #         self.password = self.last_name
+        #         self.password = make_password(self.password)
+        #     super().save(*args, **kwargs)
 
 class Document(models.Model):
     staff = models.ForeignKey(Bursar, on_delete=models.CASCADE, null=True, related_name="busar")

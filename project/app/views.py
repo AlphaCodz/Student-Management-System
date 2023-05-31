@@ -5,7 +5,7 @@ from rest_framework.decorators import APIView, api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import JsonResponse
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
 from helpers.views import jsonify_student
@@ -110,6 +110,14 @@ class SubmitDocuments(APIView):
         }
         return Response(res, status=status.HTTP_201_CREATED)
         
+class Signature(APIView):
+    def get(self, request):
+        bursar = request.user
+        signature = {
+            "signature": bursar.signature.url if bursar.signature.url else None
+        }
+        return Response(signature, status=status.HTTP_200_OK)
+        
 class SignUpBursar(APIView):
     def post(self, request, format=None):
         serializer = BursarSerializer(data=request.data)
@@ -118,6 +126,21 @@ class SignUpBursar(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class SignInBursar(APIView):
+    def post(self, request, format=None):
+        staff_number = request.data["staff_number"]
+        password = request.data["password"]
+
+        bursar = authenticate(request, staff_number=staff_number, password=password)
+        if bursar is not None:
+            login(request, bursar)
+            token, _ = Token.objects.get_or_create(user=bursar)
+            return Response({"token": token.key})
+        else:
+            return Response({"message": "Invalid credentials"}, status=401)
+            
+        
 class AllBursars(APIView):
     def get(request, format=None):
         bursar = Bursar.objects.all()
