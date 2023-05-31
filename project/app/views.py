@@ -141,7 +141,23 @@ class AllDocuments(APIView):
             }
             for doc in docs
         ]
-        return Response(data, status=200)    
+        return Response(data, status=200)   
+    
+class AllBursarDocs(APIView):
+    def get(self, request):
+        bursar = request.user
+        bur = Document.objects.filter(staff=bursar)
+        data = [
+            {
+                "name": doc.name,
+                "submitted_to": f"{doc.staff.first_name} {doc.staff.last_name}",
+                "file": doc.file.url,
+                "in_review": doc.in_review,
+                "signed": doc.signed
+            }
+            for doc in bur
+        ]
+        return Response(data, status=200)
 class SignUpBursar(APIView):
     def post(self, request, format=None):
         serializer = BursarSerializer(data=request.data)
