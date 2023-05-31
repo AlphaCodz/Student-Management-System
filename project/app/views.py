@@ -134,9 +134,10 @@ class AllDocuments(APIView):
         data = [
             {
                 "name": doc.name,
-                "status": doc.status,
                 "submitted_to": f"{doc.staff.first_name} {doc.staff.last_name}",
-                "file": doc.file.url
+                "file": doc.file.url,
+                "in_review": doc.in_review,
+                "signed": doc.signed
             }
             for doc in docs
         ]
