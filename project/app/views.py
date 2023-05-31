@@ -84,7 +84,17 @@ class BursarDocumentsView(APIView):
     
 class SubmitDocuments(APIView):
     def post(self, request, staff_id):
-        student=request.user
+        student = request.user
+
+        try:
+            user = Student.objects.get(id=student.id)
+        except Student.DoesNotExist:
+            res = {
+                "code": 404,
+                "message": "Student Doesn't exist"
+            }
+            return Response(res, status=status.HTTP_404_NOT_FOUND)
+
         try:
             staff = Bursar.objects.get(id=staff_id)
         except Bursar.DoesNotExist:
@@ -93,16 +103,16 @@ class SubmitDocuments(APIView):
                 "message": "Staff Does Not Exist"
             }
             return Response(res, status=status.HTTP_404_NOT_FOUND)
-        
-        bursar = Document.objects.create(
-            staff=staff,
-            name=request.data["name"],
-            file=request.data["file"]
-        )
+
+        bursar, created = Document.objects.get_or_create(student=student, staff=staff)
+        bursar.name = request.data["name"]
+        bursar.file = request.data["file"]
         bursar.save()
+
         res = {
-            "code":201,
+            "code": 201,
             "message": "Documents Submitted Successfully",
+            "student_name": f"{user.first_name} {user.last_name}",
             "file_name": bursar.name,
             "file": str(bursar.file.url),
             "student": f"{student.first_name} {student.last_name}",
@@ -117,7 +127,20 @@ class Signature(APIView):
             "signature": bursar.signature.url if bursar.signature.url else None
         }
         return Response(signature, status=status.HTTP_200_OK)
-        
+class AllDocuments(APIView):
+    def get(self, request):
+        student = request.user
+        docs = Document.objects.filter(student=student)
+        data = [
+            {
+                "name": doc.name,
+                "status": doc.status,
+                "submitted_to": f"{doc.staff.first_name} {doc.staff.last_name}",
+                "file": doc.file.url
+            }
+            for doc in docs
+        ]
+        return Response(data, status=200)    
 class SignUpBursar(APIView):
     def post(self, request, format=None):
         serializer = BursarSerializer(data=request.data)

@@ -134,9 +134,15 @@ class Bursar(models.Model):
         #     super().save(*args, **kwargs)
 
 class Document(models.Model):
+    STATUS = (
+        ("In-Review", "In-Review"),
+        ("Signed", "Signed")
+    )
     staff = models.ForeignKey(Bursar, on_delete=models.CASCADE, null=True, related_name="busar")
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=100)
     file = models.FileField(upload_to="media/documents/", null=True)
+    status = models.CharField(choices=STATUS, default="In-Review", null=True)
     
     def __str__(self):
         return self.name
