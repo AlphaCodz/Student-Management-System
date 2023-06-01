@@ -225,9 +225,11 @@ class SubmitDocuments(APIView):
             }
             return Response(res, status=status.HTTP_404_NOT_FOUND)
 
-        document, created = Document.objects.get_or_create(student=student, staff=staff)
+        document = Document(student=student, staff=staff)
         document.name = request.data["name"]
         document.file = request.data["file"]
+        document.in_review = True
+        document.signed = False
         document.save()
 
         res = {
@@ -240,7 +242,24 @@ class SubmitDocuments(APIView):
             "department": student.department.department
         }
         return Response(res, status=status.HTTP_201_CREATED)
-        
+
+
+
+class AllDocuments(APIView):
+    def get(self, request):
+        student = request.user
+        docs = Document.objects.filter(student=student)
+        data = [
+            {
+                "name": doc.name,
+                "submitted_to": f"{doc.staff.first_name} {doc.staff.last_name}",
+                "file": doc.file.url,
+                "in_review": doc.in_review,
+                "signed": doc.signed
+            }
+            for doc in docs
+        ]
+        return Response(data, status=200)       
 
 # class Signature(APIView):
 #     def get(self, request):
@@ -249,21 +268,7 @@ class SubmitDocuments(APIView):
 #             "signature": bursar.signature.url if bursar.signature.url else None
 #         }
 #         return Response(signature, status=status.HTTP_200_OK)
-# class AllDocuments(APIView):
-#     def get(self, request):
-#         student = request.user
-#         docs = Document.objects.filter(student=student)
-#         data = [
-#             {
-#                 "name": doc.name,
-#                 "submitted_to": f"{doc.staff.first_name} {doc.staff.last_name}",
-#                 "file": doc.file.url,
-#                 "in_review": doc.in_review,
-#                 "signed": doc.signed
-#             }
-#             for doc in docs
-#         ]
-#         return Response(data, status=200)   
+ 
     
 # class AllBursarDocs(APIView):
 #     def get(self, request):
