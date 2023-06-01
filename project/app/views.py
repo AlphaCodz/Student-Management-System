@@ -160,7 +160,8 @@ class SignUpBursar(APIView):
             staff_passport=bursar_data["staff_passport"],
             department=department,
             address=bursar_data["address"],
-            date_of_birth=date_of_birth
+            date_of_birth=date_of_birth,
+            staff_signature=bursar_data["staff_signature"]
         )
         bursar.is_student=False
         bursar.is_bursar=True
@@ -201,9 +202,8 @@ class BursarDocumentsView(APIView):
     def get(self, request, format=None):
         bursar = request.user  # Assuming the current user is the bursar
         documents = Document.objects.filter(staff=bursar)
-        # serializer = DocumentSerializer(documents, many=True)
-        # return Response(serializer.data)
-    
+        data = [{"name": doc.name, "file":doc.file, "in_review": doc.in_review, "signed":doc.signed} for doc in documents]
+        return Response(data, status=status.HTTP_200_OK)
 class SubmitDocuments(APIView):
     def post(self, request, staff_id):
         student = request.user

@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 import string, random as rand
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
-
 # Create your models here.
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
