@@ -197,12 +197,12 @@ class BursarLogin(APIView):
         }
         return Response(resp, resp["code"])   
 
-# class BursarDocumentsView(APIView):
-#     def get(self, request, format=None):
-#         bursar = request.user  # Assuming the current user is the bursar
-#         documents = Document.objects.filter(staff=bursar)
-#         serializer = DocumentSerializer(documents, many=True)
-#         return Response(serializer.data)
+class BursarDocumentsView(APIView):
+    def get(self, request, format=None):
+        bursar = request.user  # Assuming the current user is the bursar
+        documents = Document.objects.filter(staff=bursar)
+        # serializer = DocumentSerializer(documents, many=True)
+        # return Response(serializer.data)
     
 class SubmitDocuments(APIView):
     def post(self, request, staff_id):
