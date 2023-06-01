@@ -46,7 +46,7 @@ class Department(models.Model):
     def __str__(self):
         return self.department
 
-class Student(AbstractUser):
+class MyUser(AbstractUser):
     NEXT_OF_KIN = (
         ("Father", "Father"),
         ("Mother", "Mother"),
@@ -75,10 +75,14 @@ class Student(AbstractUser):
     
     # password
     password= models.CharField(max_length=300, null=True)
+    is_student = models.BooleanField(default=True)
+    is_bursar = models.BooleanField(default=False)
+    is_school_officer = models.BooleanField(default=False)
     
-    
-    # documents = models.ForeignKey(Document, on_delete=models.DO_NOTHING, null=True)# SUBMIT DOCUMENTS
-    
+    # STAFF DATA
+    staff_number = models.CharField(max_length=40)
+    staff_passport = models.ImageField(upload_to="media/staff_passport/", null=True)
+    staff_signature = models.ImageField(upload_to="media/signature/", null=True)
     
     USERNAME_FIELD="email"
     REQUIRED_FIELDS=[]
@@ -89,7 +93,7 @@ class Student(AbstractUser):
     def save(self, *args, **kwargs):
         if not self.username:
             self.username = ''.join(rand.choices(string.ascii_lowercase + string.digits, k=5))
-        if not self.matric_number:
+        if not self.matric_number and (not self.is_bursar or not self.is_school_officer):
             self.matric_number = 'P/ND/22/3210'+''.join(rand.choices(string.digits, k=3))
         if not self.password:
             self.password = self.last_name
@@ -97,45 +101,11 @@ class Student(AbstractUser):
         else:
             self.password = self.last_name
             self.set_password(self.last_name)
-        super(Student, self).save(*args, **kwargs)
-
-class Bursar(models.Model):
-    student = models.ManyToManyField(Student)
-    first_name=models.CharField(max_length=250)
-    last_name=models.CharField(max_length=250)
-    staff_number = models.CharField(max_length=30)
-    contact=models.BigIntegerField()
-    email= models.EmailField(unique=True)
-    passport=models.ImageField(upload_to="media/staff_passport/", null=True)
-    address = models.CharField(max_length=200, null=True, blank=True)
-    date_of_birth = models.DateField(null=True, blank=True)
-    signature = models.ImageField(upload_to="media/signature/", null=True)
-    is_bursar = models.BooleanField(default=True, null=True)
-    
-    # FROM WHAT DEPARTMENT
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    password = models.CharField(max_length=300, null=True)
-
-    def __str__(self):
-        return self.first_name
-    
-    def save(self, *args, **kwargs):
-        if not self.password:
-            self.password = self.last_name
-            self.password = make_password(self.password)
-        super().save(*args, **kwargs)
-        # def save(self, *args, **kwargs):
-        #     if not self.password:
-        #         self.password = self.last_name
-        #         self.password = make_password(self.password)
-        #     else:
-        #         self.password = self.last_name
-        #         self.password = make_password(self.password)
-        #     super().save(*args, **kwargs)
+        super(MyUser, self).save(*args, **kwargs)
 
 class Document(models.Model):
-    staff = models.ForeignKey(Bursar, on_delete=models.CASCADE, null=True, related_name="busar")
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True)
+    staff = models.ForeignKey(MyUser, on_delete=models.CASCADE, null=True, related_name="busar", limit_choices_to={'is_bursar':True})
+    student = models.ForeignKey(MyUser, on_delete=models.CASCADE, null=True, limit_choices_to={'is_student': True})
     name = models.CharField(max_length=100)
     file = models.FileField(upload_to="media/documents/", null=True)
     in_review = models.BooleanField(default=True)
@@ -144,20 +114,6 @@ class Document(models.Model):
     def __str__(self):
         return self.name
     
-class SchoolOfficer(models.Model):
-    SCHOOL = (
-        ("TECHNOLOGY", "TECHNOLOGY"),
-        ("ARTS", "ARTS"),
-        ("ENGINEERING", "ENGINEERING"),
-    )
-    student=models.ManyToManyField(Student, related_name="student")
-    first_name=models.CharField(max_length=250)
-    last_name = models.CharField(max_length=250)
-    staff_number = models.CharField(max_length=50)
-    school = models.CharField(max_length=20, choices=SCHOOL)
-    
-    def __str__(self):
-        return f"Staff: {self.staff_number}"
     
 class Semester(models.Model):
     SEMESTER = (
@@ -180,15 +136,10 @@ class Semester(models.Model):
     
 class Course(models.Model):
     department = models.ManyToManyField(Department)
-    student= models.ManyToManyField(Student)
+    student= models.ManyToManyField(MyUser, limit_choices_to={"is_student":True})
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=200, null=True)
     code = models.CharField(max_length=10, null=True)
     
     def __str__(self):
         return self.title
-    
-    
-        
-    
-    

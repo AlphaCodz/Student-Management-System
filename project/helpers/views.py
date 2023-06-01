@@ -1,13 +1,14 @@
 from rest_framework.views import APIView
-from app.models import Student
+from app.models import MyUser
 
-def jsonify_student(student:Student):
+def jsonify_student(student:MyUser):
     return {
         "id":student.id,
         "first_name": student.first_name,
         "middle_name": student.middle_name,
         "last_name": student.last_name,
         "contact": student.contact,
+        "date_of_birth": student.date_of_birth,
         "matric_no": student.matric_number,
         "student_address": student.address,
         "department": str(student.department),
@@ -17,3 +18,15 @@ def jsonify_student(student:Student):
         "passport": str(student.passport),
     }
     
+def jsonify_bursar(bursar:MyUser):
+    return {
+        "id":bursar.id,
+        "first_name": bursar.first_name,
+        "last_name": bursar.last_name,
+        "contact": bursar.contact,
+        "date_of_birth": bursar.date_of_birth,
+        "matric_no": bursar.matric_number,
+        "student_address": bursar.address,
+        "department": str(bursar.department),
+        "passport": str(bursar.passport),
+    }
