@@ -207,7 +207,6 @@ class BursarDocumentsView(APIView):
 class SubmitDocuments(APIView):
     def post(self, request, staff_id):
         student = request.user
-
         try:
             user = MyUser.objects.get(id=student.id, is_student=True)
         except Student.DoesNotExist:
@@ -226,22 +225,23 @@ class SubmitDocuments(APIView):
             }
             return Response(res, status=status.HTTP_404_NOT_FOUND)
 
-        bursar, created = Document.objects.get_or_create(student=student, staff=staff)
-        bursar.name = request.data["name"]
-        bursar.file = request.data["file"]
-        bursar.save()
+        document, created = Document.objects.get_or_create(student=student, staff=staff)
+        document.name = request.data["name"]
+        document.file = request.data["file"]
+        document.save()
 
         res = {
             "code": 201,
             "message": "Documents Submitted Successfully",
             "student_name": f"{user.first_name} {user.last_name}",
-            "file_name": bursar.name,
-            "file": str(bursar.file.url),
-            "student": f"{student.first_name} {student.last_name}",
+            "file_name": document.name,
+            "file": str(document.file.url),
+            "submitted_to": f"{staff.first_name} {staff.last_name}",
             "department": student.department.department
         }
         return Response(res, status=status.HTTP_201_CREATED)
         
+
 # class Signature(APIView):
 #     def get(self, request):
 #         bursar = request.user
