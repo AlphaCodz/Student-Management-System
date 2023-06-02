@@ -15,6 +15,7 @@ from django.core.paginator import Paginator
 from rest_framework import viewsets
 from django.views.decorators.vary import vary_on_cookie
 import datetime
+from django.db.models import Q
 
 
 class UserViewSet(viewsets.ViewSet):
@@ -243,8 +244,26 @@ class SubmitDocuments(APIView):
         }
         return Response(res, status=status.HTTP_201_CREATED)
 
+@api_view(["GET"])
+def GetSignature(request, format=None):
+    staff_id = request.user.id
+    try:
+        staff = MyUser.objects.filter(Q(is_school_officer=True) | Q(is_bursar=True), id=staff_id).exclude(is_student=True) 
+    except MyUser.DoesNotExist:
+        res = {
+            "code": status.HTTP_404_NOT_FOUND,
+            "message": "Staff Doesn't Exist"
+        }
+        return Response(res, res["code"])
+    
+    resp = {
+        "code": status.HTTP_200_OK,
+        "signature": staff.staff_signature.url if staff.staff_signature.url else None
+    }  
+    return Response(resp, resp["code"])
 
-
+    
+    
 class AllDocuments(APIView):
     def get(self, request):
         student = request.user
@@ -285,6 +304,7 @@ class AllDocuments(APIView):
 #             for doc in bur
 #         ]
 #         return Response(data, status=200)
+
 # class SignUpBursar(APIView):
 #     def post(self, request, format=None):
 #         serializer = BursarSerializer(data=request.data)
@@ -308,24 +328,24 @@ class AllDocuments(APIView):
 #             return Response({"message": "Invalid credentials"}, status=401)
             
         
-# class AllBursars(APIView):
-#     def get(request, format=None):
-#         bursar = Bursar.objects.all()
-#         bursar_list = []
-#         for bursars in bursar:
-#             resp = {
-#                 "id":bursars.id,
-#                 "first_name": bursars.first_name,
-#                 "last_name": bursars.last_name,
-#                 "staff_number": bursars.staff_number,
-#                 "contact": bursars.contact,
-#                 "email": bursars.email,
-#                 "department": str(bursars.department),
-#                 "passport": str(bursars.passport),
-#             }
-#             bursar_list.append(resp)
-#         context_data = {"bursars":bursar_list}
-#         return JsonResponse(context_data)
+class AllBursars(APIView):
+    def get(request, format=None):
+        bursar = MyUser.objects.filter(is_bursar=True)
+        bursar_list = []
+        for bursars in bursar:
+            resp = {
+                "id":bursars.id,
+                "first_name": bursars.first_name,
+                "last_name": bursars.last_name,
+                "staff_number": bursars.staff_number,
+                "contact": bursars.contact,
+                "email": bursars.email,
+                "department": str(bursars.department),
+                "passport": str(bursars.passport),
+            }
+            bursar_list.append(resp)
+        context_data = {"bursars":bursar_list}
+        return JsonResponse(context_data)
         
 
     
