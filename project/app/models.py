@@ -78,6 +78,9 @@ class MyUser(AbstractUser):
     is_bursar = models.BooleanField(default=False)
     is_school_officer = models.BooleanField(default=False)
     
+    # PAYSTACK INT
+    is_paid = models.BooleanField(default=False)
+    
     # STAFF DATA
     staff_number = models.CharField(max_length=40)
     staff_passport = models.ImageField(upload_to="media/staff_passport/", null=True)

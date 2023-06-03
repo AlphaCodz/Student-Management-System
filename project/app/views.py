@@ -248,7 +248,7 @@ class SubmitDocuments(APIView):
 def GetSignature(request, format=None):
     staff_id = request.user.id
     try:
-        staff = MyUser.objects.filter(Q(is_school_officer=True) | Q(is_bursar=True), id=staff_id).exclude(is_student=True) 
+        staff = MyUser.objects.get(id=staff_id)
     except MyUser.DoesNotExist:
         res = {
             "code": status.HTTP_404_NOT_FOUND,

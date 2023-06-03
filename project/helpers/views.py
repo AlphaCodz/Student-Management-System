@@ -16,6 +16,7 @@ def jsonify_student(student:MyUser):
         "relationship_with_next_of_kin": student.relationship,
         "next_of_kin_contact": student.nok_contact,
         "passport": str(student.passport),
+        "is_paid": student.is_paid
     }
     
 def jsonify_bursar(bursar:MyUser):
@@ -28,5 +29,6 @@ def jsonify_bursar(bursar:MyUser):
         "matric_no": bursar.matric_number,
         "student_address": bursar.address,
         "department": str(bursar.department),
-        "passport": str(bursar.passport),
+        "staff_passport": str(bursar.staff_passport),
+        "staff_signature": bursar.staff_signatures.url
     }
