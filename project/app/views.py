@@ -162,7 +162,7 @@ class SignUpBursar(APIView):
             department=department,
             address=bursar_data["address"],
             date_of_birth=date_of_birth,
-            staff_signature=bursar_data["staff_signature"]
+            staff_signatures=bursar_data["staff_signatures"]
         )
         bursar.is_student=False
         bursar.is_bursar=True
@@ -258,7 +258,7 @@ def GetSignature(request, format=None):
     
     resp = {
         "code": status.HTTP_200_OK,
-        "signature": staff.staff_signature.url if staff.staff_signature.url else None
+        "signature": staff.staff_signatures.url if staff.staff_signatures.url else None
     }  
     return Response(resp, resp["code"])
 

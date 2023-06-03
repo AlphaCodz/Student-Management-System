@@ -81,7 +81,7 @@ class MyUser(AbstractUser):
     # STAFF DATA
     staff_number = models.CharField(max_length=40)
     staff_passport = models.ImageField(upload_to="media/staff_passport/", null=True)
-    staff_signature = models.ImageField(upload_to="media/signature/", null=True)
+    staff_signatures = models.ImageField(upload_to="media/signature/", null=True)
     
     USERNAME_FIELD="email"
     REQUIRED_FIELDS=[]
@@ -103,9 +103,14 @@ class MyUser(AbstractUser):
         super(MyUser, self).save(*args, **kwargs)
 
 class Document(models.Model):
+    TITLE = (
+        ("School Fees Receipt", "School Fees Receipt"),
+        ("Biodata", "Biodata"),
+        ("Course Form", "Course Form")
+    )
     staff = models.ForeignKey(MyUser, on_delete=models.CASCADE, null=True, related_name="busar", limit_choices_to={'is_bursar':True})
     student = models.ForeignKey(MyUser, on_delete=models.CASCADE, null=True, limit_choices_to={'is_student': True})
-    name = models.CharField(max_length=100)
+    name = models.CharField(choices=TITLE, max_length=19)
     file = models.FileField(upload_to="media/documents/", null=True)
     in_review = models.BooleanField(default=True)
     signed=models.BooleanField(default=False)
