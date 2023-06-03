@@ -117,6 +117,7 @@ class Document(models.Model):
     file = models.FileField(upload_to="media/documents/", null=True)
     in_review = models.BooleanField(default=True)
     signed=models.BooleanField(default=False)
+    date_submitted = models.DateTimeField(auto_now_add=True, null=True)
     
     def __str__(self):
         return self.name

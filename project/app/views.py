@@ -241,7 +241,8 @@ class SubmitDocuments(APIView):
             "file_name": document.name,
             "file": str(document.file.url),
             "submitted_to": f"{staff.first_name} {staff.last_name}",
-            "department": student.department.department
+            "department": student.department.department,
+            "date_submitted":document.date_submitted
         }
         return Response(res, status=status.HTTP_201_CREATED)
 
@@ -273,6 +274,7 @@ class AllDocuments(APIView):
             {
                 "name": doc.name,
                 "submitted_to": f"{doc.staff.first_name} {doc.staff.last_name}",
+                "date_submitted": doc.date_submitted,
                 "file": doc.file.url,
                 "in_review": doc.in_review,
                 "signed": doc.signed
