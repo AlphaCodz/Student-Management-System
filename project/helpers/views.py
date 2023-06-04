@@ -26,8 +26,8 @@ def jsonify_bursar(bursar:MyUser):
         "last_name": bursar.last_name,
         "contact": bursar.contact,
         "date_of_birth": bursar.date_of_birth,
-        "matric_no": bursar.matric_number,
-        "student_address": bursar.address,
+        "staff_number": bursar.staff_number,
+        "staff_address": bursar.address,
         "department": str(bursar.department),
         "staff_passport": str(bursar.staff_passport),
         "staff_signature": bursar.staff_signatures.url
