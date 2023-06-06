@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import MyUser, Department, Document
+from .models import MyUser, Department, Document, Payment
 from rest_framework.decorators import APIView, api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -105,6 +105,43 @@ class GetAllStudents(APIView):
         student_data = [jsonify_student(student) for student in students]
         response_data = {"student_data": student_data}
         return Response(response_data, status=200)
+
+class StudentPayment(APIView):
+    def post(self, request, format=None):
+        student_id = request.user.id
+        
+        try:
+            my_student = MyUser.objects.get(is_student=True, id=student_id)
+        except MyUser.DoesNotExist:
+            res = {
+                "code": status.HTTP_404_NOT_FOUND,
+                "message": "Student Doesn't Exist"
+                }
+            return Response(res, res["code"])
+        
+        payment = Payment()
+        payment.student = my_student
+        payment.amount_paid = request.POST.get("amount_paid")
+        payment.status = request.POST.get("status")
+        payment.transaction_reference = request.POST.get("transaction_reference")
+        my_student.is_paid = True
+        payment.save()
+        res = {
+            "code": status.HTTP_201_CREATED,
+            "message": "Payment Validated",
+            "payment_data": {
+                "student_name": f"{my_student.first_name} {my_student.last_name}",
+                "payment_status": payment.status,
+                "amount_paid": payment.amount_paid,
+                "transaction_ref": payment.transaction_reference,
+                "is_paid": my_student.is_paid
+            }
+        }
+        return Response(res, res["code"])
+        
+        
+        
+        
 
 
 class StudentBiodata(APIView):

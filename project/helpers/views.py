@@ -7,6 +7,7 @@ def jsonify_student(student:MyUser):
         "first_name": student.first_name,
         "middle_name": student.middle_name,
         "last_name": student.last_name,
+        "email":student.email,
         "contact": student.contact,
         "date_of_birth": student.date_of_birth,
         "matric_no": student.matric_number,
