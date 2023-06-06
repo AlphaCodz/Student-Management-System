@@ -141,7 +141,7 @@ class StudentPayment(APIView):
 
 
 class StudentBiodata(APIView):
-    @method_decorator(cache_page(60*60))
+    # @method_decorator(cache_page(60*60))
     def get(self, request, id):
         try:
             student = MyUser.objects.get(is_student=True, id=id)
