@@ -54,12 +54,14 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "app",
-    "corsheaders" 
+    "corsheaders",
+    "treblle"
 
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
+    'treblle.middleware.TreblleMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
     'django.middleware.cache.UpdateCacheMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -121,6 +123,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ]
+}
+
+# API MONITORING
+TREBLLE_INFO = {
+'api_key': env('TREBLLE_API_KEY'),
+'project_id': env('TREBLLE_PROJECT_ID')
 }
 
 
