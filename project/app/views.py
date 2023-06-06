@@ -124,7 +124,7 @@ class StudentPayment(APIView):
         payment.amount_paid = request.POST.get("amount_paid")
         payment.status = request.POST.get("status")
         payment.transaction_reference = request.POST.get("transaction_reference")
-        my_student.is_paid = True
+        # my_student.is_paid = True
         payment.save()
         res = {
             "code": status.HTTP_201_CREATED,
@@ -138,10 +138,6 @@ class StudentPayment(APIView):
             }
         }
         return Response(res, res["code"])
-        
-        
-        
-        
 
 
 class StudentBiodata(APIView):

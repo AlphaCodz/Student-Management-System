@@ -115,19 +115,18 @@ class Payment(models.Model):
     status = models.CharField(choices=PAYMENT_STATUS, max_length=10)
     amount_paid = models.BigIntegerField()
     transaction_reference = models.CharField(max_length=300)
-    payment_date= models.DateTimeField(auto_now_add=True)
+    payment_date = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
         return f"{self.student.first_name} {self.amount_paid}"
     
-    def change_status(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         if self.status == "Successful":
-            self.student.is_paid=True
+            self.student.is_paid = True
         elif self.status == "Denied":
-            self.student.is_paid=False
-        super(Payment, self).save(*args, **kwargs)
-            
-    
+            self.student.is_paid = False
+        self.student.save()
+        super(Payment, self).save(*args, **kwargs)   
 
 class Document(models.Model):
     TITLE = (
