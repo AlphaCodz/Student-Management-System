@@ -17,17 +17,6 @@ from django.views.decorators.vary import vary_on_cookie
 import datetime
 from django.db.models import Q
 
-
-class UserViewSet(viewsets.ViewSet):
-    # With cookie: cache requested url for each user for 2 hours
-    @method_decorator(cache_page(60*60*2))
-    @method_decorator(vary_on_cookie)
-    def list(self, request, format=None):
-        content = {
-            'user_feed': request.user.get_user_feed()
-        }
-        return Response(content)
-
 # Create your views here.
 class RegStudent(APIView):
     def post(self, request, format=None):
@@ -236,7 +225,7 @@ class BursarDocumentsView(APIView):
     def get(self, request, format=None):
         bursar = request.user  # Assuming the current user is the bursar
         documents = Document.objects.filter(staff=bursar)
-        data = [{"name": doc.name, "file":doc.file.url, "in_review": doc.in_review, "signed":doc.signed, "date_submitted":doc.date_submitted.date(), "submitted_by": f"{doc.student.first_name} {doc.student.last_name}" } for doc in documents]
+        data = [{"name": doc.name, "file":doc.file.url, "in_review": doc.in_review, "signed":doc.signed, "date_submitted":doc.date_submitted.date(), "submitted_by": f"{doc.student.first_name} {doc.student.last_name}", "student_matric_no": doc.student.matric_number } for doc in documents]
         return Response(data, status=status.HTTP_200_OK)
     
 class SubmitDocuments(APIView):
