@@ -16,6 +16,7 @@ from django.views.decorators.vary import vary_on_cookie
 import datetime
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.db import transaction, connection
 
 # Create your views here.
 class RegStudent(APIView):
@@ -65,33 +66,103 @@ class RegStudent(APIView):
         return Response(res, res["code"])   
     
     
+from django.utils.datastructures import MultiValueDictKeyError
+
 class DocumentSignView(APIView):
     def post(self, request, document_id):
-        staff = request.user
-        document = get_object_or_404(Document, id=document_id, staff=staff)
+        bursar = request.user.id
 
-        # Retrieve the staff signature from the request data
-        # staff_signature = staff.staff_signatures
-        # print(staff_signature)
+        try:
+            staff = MyUser.objects.get(id=bursar)
+        except MyUser.DoesNotExist:
+            res = {
+                "code": status.HTTP_404_NOT_FOUND,
+                "error": "ERROR"
+            }
+            return Response(res, res["code"])
 
-        if staff:
-            # Save the staff signature to the document
-            document.signature = request.POST.get("signature")
-            # Update the is_signed field to True
-            document.signed = True
-            document.in_review=False
-            # Save the changes
-            document.save()
-            return Response({"message": "Document signed successfully.", "document_data": {
+        try:
+            document = Document.objects.get(id=document_id)
+        except Document.DoesNotExist:
+            res = {
+                "code": status.HTTP_404_NOT_FOUND,
+                "error": "Document Does Not Exist"
+            }
+            return Response(res, res["code"])
+
+        try:
+            signature = request.FILES["signature"]
+        except MultiValueDictKeyError:
+            res = {
+                "code": status.HTTP_400_BAD_REQUEST,
+                "error": "Missing 'signature' in the request data"
+            }
+            return Response(res, res["code"])
+
+        document.staff = staff
+        document.signature = signature
+        document.signed = True
+        document.in_review = False
+        document.save()
+
+        res = {
+            "code": status.HTTP_200_OK,
+            "staff_data": {
+                "full_name": f"{staff.first_name} {staff.last_name}",
+                "signature": document.signature.url
+            },
+            "document_data": {
                 "name": document.name,
                 "file": document.file.url,
-                "in_review": document.in_review,
-                "signed": document.signed,
-                "staff_signature": document.signature,
-            }})
-        else:
-            return Response({"error": "Staff not logged in."})
-    
+                "signed": document.signed
+            }
+        }
+
+        return Response(res, res["code"])
+
+# class DocumentSignView(APIView):
+#     def post(self, request, document_id):
+#         bursar = request.user.id
+
+#         try:
+#             staff = MyUser.objects.get(id=bursar)
+#         except MyUser.DoesNotExist:
+#             res = {
+#                 "code": status.HTTP_404_NOT_FOUND,
+#                 "error": "ERROR"
+#             }
+#             return Response(res, res["code"])
+
+#         try:
+#             document = Document.objects.get(id=document_id)
+#         except Document.DoesNotExist:
+#             res = {
+#                 "code": status.HTTP_404_NOT_FOUND,
+#                 "error": "Document Does Not Exist"
+#             }
+#             return Response(res, res["code"])
+        
+#         doc = Document(staff, document)
+#         doc.signature = request.POST["signature"],
+#         doc.signed=True
+#         doc.in_review=False
+#         doc.save()
+        
+#         res = {
+#             "code": status.HTTP_200_OK,
+#             "staff_data": {
+#                 "full_name": f"{staff.first_name} {staff.last_name}",
+#                 "signature": doc.signature.url
+#             },
+#             "document_data": {
+#                 "name": document.name,
+#                 "file": document.file.url,
+#                 "signed": document.signed
+#             }
+#         }
+
+#         return Response(res, res["code"])
+      
 class StudentLogin(APIView):
     def post(self, request, format=None):
         student = MyUser.objects.filter(is_student=True, matric_number=request.data.get("matric_number")).first()
