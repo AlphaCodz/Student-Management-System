@@ -61,10 +61,10 @@ class MyUser(AbstractUser):
     username = models.CharField(max_length=5, null=True)
     email= models.EmailField(unique=True)
     date_of_birth = models.DateField()
-    passport = models.ImageField(upload_to="media/student_passport/", null=True)
+    passport = models.ImageField(upload_to="student_passport/", null=True)
     
     # Student Docs
-    biodata = models.FileField(upload_to="media/documents/", null=True)
+    biodata = models.FileField(upload_to="documents/", null=True)
     
     # NOK means Next_Of_Kin
     nok_name = models.CharField(max_length=250, null=True)
@@ -83,8 +83,8 @@ class MyUser(AbstractUser):
     
     # STAFF DATA
     staff_number = models.CharField(max_length=40)
-    staff_passport = models.ImageField(upload_to="media/staff_passport/", null=True)
-    staff_signatures = models.ImageField(upload_to="media/signature/", null=True)
+    staff_passport = models.ImageField(upload_to="staff_passport/", null=True)
+    staff_signatures = models.ImageField(upload_to="signature/", null=True)
     
     USERNAME_FIELD="email"
     REQUIRED_FIELDS=[]
@@ -137,9 +137,10 @@ class Document(models.Model):
     staff = models.ForeignKey(MyUser, on_delete=models.CASCADE, null=True, related_name="busar", limit_choices_to={'is_bursar':True})
     student = models.ForeignKey(MyUser, on_delete=models.CASCADE, null=True, limit_choices_to={'is_student': True})
     name = models.CharField(choices=TITLE, max_length=19)
-    file = models.FileField(upload_to="media/documents/", null=True)
+    file = models.FileField(upload_to="documents/", null=True)
     in_review = models.BooleanField(default=True)
     signed=models.BooleanField(default=False)
+    signature = models.ImageField(upload_to="documents/document_signatures/", null=True)
     date_submitted = models.DateTimeField(auto_now_add=True, null=True)
     
     def __str__(self):

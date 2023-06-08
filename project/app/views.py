@@ -10,12 +10,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from helpers.views import jsonify_student, jsonify_bursar
 from app.permissions import IsBursar, IsStudent
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from django.core.paginator import Paginator
 from rest_framework import viewsets
 from django.views.decorators.vary import vary_on_cookie
 import datetime
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 class RegStudent(APIView):
@@ -63,6 +63,34 @@ class RegStudent(APIView):
             "student_data": jsonify_student(student)
         }
         return Response(res, res["code"])   
+    
+    
+class DocumentSignView(APIView):
+    def post(self, request, document_id):
+        staff = request.user
+        document = get_object_or_404(Document, id=document_id, staff=staff)
+
+        # Retrieve the staff signature from the request data
+        # staff_signature = staff.staff_signatures
+        # print(staff_signature)
+
+        if staff:
+            # Save the staff signature to the document
+            document.signature = request.POST.get("signature")
+            # Update the is_signed field to True
+            document.signed = True
+            document.in_review=False
+            # Save the changes
+            document.save()
+            return Response({"message": "Document signed successfully.", "document_data": {
+                "name": document.name,
+                "file": document.file.url,
+                "in_review": document.in_review,
+                "signed": document.signed,
+                "staff_signature": document.signature,
+            }})
+        else:
+            return Response({"error": "Staff not logged in."})
     
 class StudentLogin(APIView):
     def post(self, request, format=None):
@@ -130,7 +158,6 @@ class StudentPayment(APIView):
 
 
 class StudentBiodata(APIView):
-    # @method_decorator(cache_page(60*60))
     def get(self, request, id):
         try:
             student = MyUser.objects.get(is_student=True, id=id)
@@ -196,7 +223,6 @@ class SignUpBursar(APIView):
             "bursar_data": jsonify_bursar(bursar)
         }
         return Response(res, res["code"])
-    
 class BursarLogin(APIView):
     def post(self, request, format=None):
         bursar = MyUser.objects.filter(is_bursar=True, staff_number=request.data.get("staff_number")).first()
@@ -248,9 +274,19 @@ class SubmitDocuments(APIView):
                 "message": "Bursar Does Not Exist"
             }
             return Response(res, status=status.HTTP_404_NOT_FOUND)
+        
+        # Disallow Double Submission
+        doc_name = request.POST.get("name")
+        doc = Document.objects.filter(student=student, name=doc_name).exists()
+        if doc:
+            res = {
+                "code":status.HTTP_400_BAD_REQUEST,
+                "error": "You cannot submit the same document twice in a semester"
+            }
+            return Response(res, res["code"])
 
         document = Document(student=student, staff=staff)
-        document.name = request.data["name"]
+        document.name = doc_name
         document.file = request.data["file"]
         document.in_review = True
         document.signed = False
@@ -292,6 +328,7 @@ class AllDocuments(APIView):
         docs = Document.objects.filter(student=student)
         data = [
             {
+                "id": doc.id,
                 "name": doc.name,
                 "submitted_to": f"{doc.staff.first_name} {doc.staff.last_name}",
                 "submitted_by": f"{doc.student.first_name} {doc.student.last_name}",
