@@ -91,7 +91,7 @@ class DocumentSignView(APIView):
             return Response(res, res["code"])
 
         try:
-            signature = request.FILES["signature"]
+            signature = request.POST["signature"]
         except MultiValueDictKeyError:
             res = {
                 "code": status.HTTP_400_BAD_REQUEST,
@@ -109,7 +109,7 @@ class DocumentSignView(APIView):
             "code": status.HTTP_200_OK,
             "staff_data": {
                 "full_name": f"{staff.first_name} {staff.last_name}",
-                "signature": document.signature.url
+                "signature": document.signature
             },
             "document_data": {
                 "name": document.name,

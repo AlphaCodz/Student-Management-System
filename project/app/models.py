@@ -140,7 +140,7 @@ class Document(models.Model):
     file = models.FileField(upload_to="documents/", null=True)
     in_review = models.BooleanField(default=True)
     signed=models.BooleanField(default=False)
-    signature = models.ImageField(upload_to="documents/document_signatures/", null=True)
+    signature = models.URLField(null=True)
     date_submitted = models.DateTimeField(auto_now_add=True, null=True)
     
     def __str__(self):
