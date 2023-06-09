@@ -322,7 +322,7 @@ class BursarDocumentsView(APIView):
     def get(self, request, format=None):
         bursar = request.user  # Assuming the current user is the bursar
         documents = Document.objects.filter(staff=bursar)
-        data = [{"name": doc.name, "file":doc.file.url, "in_review": doc.in_review, "signed":doc.signed, "date_submitted":doc.date_submitted.date(), "submitted_by": f"{doc.student.first_name} {doc.student.last_name}", "student_matric_no": doc.student.matric_number } for doc in documents]
+        data = [{"id": doc.id, "name": doc.name, "file":doc.file.url, "in_review": doc.in_review, "signed":doc.signed, "date_submitted":doc.date_submitted.date(), "submitted_by": f"{doc.student.first_name} {doc.student.last_name}", "student_matric_no": doc.student.matric_number } for doc in documents]
         return Response(data, status=status.HTTP_200_OK)
     
 class SubmitDocuments(APIView):
